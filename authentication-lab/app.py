@@ -12,10 +12,12 @@ Config = {
   "storageBucket": "first-base-21881.appspot.com",
   "messagingSenderId": "1072098846707",
   "appId": "1:1072098846707:web:eab3df6352c700e2f11486",
-  "measurementId": "G-NL6VB7HXGJ"
+  "measurementId": "G-NL6VB7HXGJ",
+  "databaseURL": "https://first-base-21881-default-rtdb.europe-west1.firebasedatabase.app/"
 }
-firebase = pyrebase.initialize_app (config)
-auth = firebase.auth
+firebase = pyrebase.initialize_app (Config)
+auth = firebase.auth()
+db=firebase.database()
 
 
 @app.route('/', methods=['GET', 'POST'])
@@ -27,19 +29,22 @@ def signin():
             login_session['user'] = auth.sign_in_with_email_and_password(email, password)
             return redirect(url_for('add_tweet'))
         except:
-            return render_template("signin.html")
+            return redirect(url_for('signin'))
+    return render_template("signin.html")
 
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
-   if request.method == 'POST':
+    if request.method == 'POST':
        email = request.form['email']
        password = request.form['password']
        try:
-            login_session['user'] =auth.create_user_with_email_and_password(email, password)
-            return redirect(url_for('add_tweet'))
-       except:
-           return render_template("signup.html")
+        login_session['user'] = auth.create_user_with_email_and_password(email, password)
+        return redirect(url_for('add_tweet'))
+       except Exception as e:
+        print(e)
+        return redirect(url_for('signup'))
+    return render_template("signup.html")
 
 
 @app.route('/add_tweet', methods=['GET', 'POST'])
