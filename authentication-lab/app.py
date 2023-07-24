@@ -38,18 +38,39 @@ def signup():
     if request.method == 'POST':
        email = request.form['email']
        password = request.form['password']
+       fullname=request.form['fullname']
+       username=request.form['username']
+       bio=request.form['Bio']
        try:
         login_session['user'] = auth.create_user_with_email_and_password(email, password)
+        user={"email":email,"password":password,"fullname":fullname,"username":username,"bio":bio}
+        UID=login_session['user']['localId']
+        db.child("Users").child(UID).set(user)
         return redirect(url_for('add_tweet'))
-       except Exception as e:
-        print(e)
+       except:
         return redirect(url_for('signup'))
     return render_template("signup.html")
 
 
 @app.route('/add_tweet', methods=['GET', 'POST'])
 def add_tweet():
+    if request.method == 'POST':
+        title=request.form['title']
+        text=request.form['text']
+        uid=login_session['user']['localId']
+        tweet={"title":title,"text":text,"uid":uid}
+        try:
+            db.child("Tweets").push(tweet)
+        except Exception as e:
+            print(e)
     return render_template("add_tweet.html")
+
+
+@app.route('/all_tweets',methods=['GET', 'POST'])
+def all_tweets():
+    all_of_tweets=db.child("Tweets").get().val()
+    return render_template("all_tweets.html", p=all_of_tweets)
+
 
 @app.route('/signout')
 def signout():
